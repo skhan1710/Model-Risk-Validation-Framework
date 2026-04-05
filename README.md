@@ -2,8 +2,6 @@
 
 A quantitative model validation project built against the Federal Reserve's SR 11-7 supervisory guidance. Implements and stress-tests three Value-at-Risk methodologies — Historical Simulation, Parametric, and EWMA — on a multi-asset portfolio covering 17 years of market data (2007–2025), including two major crisis regimes.
 
----
-
 ## Portfolio
 
 | Asset | Ticker | Role |
@@ -16,23 +14,20 @@ A quantitative model validation project built against the Federal Reserve's SR 1
 
 **Dataset:** 4,458 trading days · April 2007 – December 2025 · Equal-weighted daily returns
 
----
 
 ## Models Implemented
 
 ### 1. Historical Simulation VaR
-Rolling 252-day empirical 1st percentile. No distributional assumption — makes it the natural benchmark.  
-Shift(1) applied to prevent look-ahead bias.
+Rolling 252-day empirical 1st percentile. No distributional assumption.
 
 ### 2. Parametric VaR
 Rolling 252-day mean and standard deviation with a fixed z-score multiplier.  
 Two calibrations tested: Normal (−2.33σ) and Student's t (−2.81σ).
 
 ### 3. EWMA VaR
-Exponentially weighted volatility with α = 0.06 (λ = 0.94, consistent with RiskMetrics).  
-Shift(1) applied to σ̂ₜ to ensure VaR threshold is set using only information available before today's return is observed.
+Exponentially weighted volatility with α = 0.06 (λ = 0.94, consistent with RiskMetrics). 
 
----
+**Note**: For all three models, the VaR threshold at *t* time is set using only the information set available at time *t - 1*
 
 ## Key Findings
 
@@ -49,12 +44,9 @@ The normality assumption underlying both Parametric and EWMA VaR was tested via 
 | Parametric VaR — normality rejection rate | **76.3%** of windows |
 | EWMA residuals — normality rejection rate | **67.7%** of windows |
 
-EWMA's dynamic volatility absorption reduces excess kurtosis from 12.03 in raw returns to 2.04 in standardized residuals — partial improvement, but far from resolving the fat-tail problem.
+EWMA's dynamic volatility absorption reduces excess kurtosis from 12.03 in raw returns to 2.04 in standardized residuals, indicating a partial improvement, but far from resolving the fat-tail problem.
 
-Student's t was fitted on standardized residuals with `floc=0, fscale=1`:  
-**df = 9.11 → 1% threshold = −2.8144σ** (vs −2.33σ under normality)
-
----
+Student's t was fitted on standardized residuals with: **dof = 9.11 → 1% threshold = −2.8144σ** (vs −2.33σ under normality)
 
 ### Breach Count Summary
 
@@ -70,7 +62,6 @@ Expected breaches at 1%: **44** (= 4,458 × 0.01)
 
 Switching from Normal to t-dist reduces EWMA excess breaches by 48% (102 → 53). Parametric VaR achieves exact target calibration under t-dist because a slow-moving rolling window pairs cleanly with a fixed threshold multiplier. EWMA's reactive volatility estimates create a moving target that a single multiplier cannot perfectly track.
 
----
 
 ### Kupiec Test (Unconditional Coverage)
 
@@ -84,12 +75,10 @@ Null hypothesis: true breach probability = 1%. Critical value: χ²(1) = 3.841 a
 | EWMA VaR (Normal) | 102 | 2.29% | 54.785 | < 0.001 | **FAIL** |
 | EWMA VaR (t-dist) | 53 | 1.19% | 1.519 | 0.218 | **PASS** |
 
----
 
 ### Christoffersen Test (Independence + Conditional Coverage)
 
 Tests whether breaches are independently distributed across time, or cluster in stress regimes.  
-A well-calibrated model should produce breach sequences that look like independent 1% coin flips.  
 Critical values: χ²(1) = 3.841 (LR_uc, LR_ind) · χ²(2) = 5.991 (LR_cc)
 
 | Model | LR_uc | LR_ind | LR_cc | Unc. Coverage | Independence | Combined |
@@ -100,7 +89,7 @@ Critical values: χ²(1) = 3.841 (LR_uc, LR_ind) · χ²(2) = 5.991 (LR_cc)
 | EWMA VaR (Normal) | 54.785 | 4.273 | 59.058 | FAIL | FAIL | FAIL |
 | EWMA VaR (t-dist) | 1.519 | 4.841 | 6.360 | PASS | FAIL | FAIL |
 
-**Every model fails the independence test.** Breach clustering is structural — not fixable by distributional recalibration alone.
+**Every model fails the independence test.** Breach clustering is structural, and isn't fixable by distributional recalibration alone.
 
 #### Clustering Detail
 
@@ -152,4 +141,4 @@ pip install yfinance pandas-datareader scipy seaborn matplotlib numpy
 
 ---
 
-*Portfolio: SPY / TLT / HYG / LQD / GLD · 2007–2025 · Python (pandas, scipy, yfinance)*
+*Disclaimer: This is my first independent quant risk project. Feedback and suggestions are welcome as I continue to improve and expand the framework*
