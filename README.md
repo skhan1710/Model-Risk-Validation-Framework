@@ -108,7 +108,7 @@ After a breach day, every model shows a conditional breach probability 4–13x t
 ## Repository Structure
 
 ```
-├── RiskAnalyst_Project.ipynb   # Full pipeline: data → models → backtesting
+├── ModelValidation_Engine.ipynb   # Full pipeline: data → models → backtesting
 ├── ValidationReport.md         # SR 11-7 structured validation writeup
 └── README.md
 ```
